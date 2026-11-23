@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Počasí</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // tmavy rezim, aby pri nacitani stranky neproblikla svetla verze
+        if (localStorage.getItem("dark") === "true") {
+            document.documentElement.classList.add("dark");
+        }
+    </script>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <a href="#" class="logo">
+                <svg class="logo__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6.5 20a5.5 5.5 0 0 1-.5-10.98A7 7 0 0 1 19 10a4.5 4.5 0 0 1-1 8.9"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="17" cy="6" r="3" fill="currentColor" opacity="0.6"/>
+                </svg>
+                <span>Počasí</span>
+            </a>
+            <button id="themeButton" class="theme-button" title="Přepnout tmavý režim">
+                <svg class="theme-button__sun" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" fill="currentColor"/>
+                    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="12" y1="2" x2="12" y2="5"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                        <line x1="2" y1="12" x2="5" y2="12"/>
+                        <line x1="19" y1="12" x2="22" y2="12"/>
+                        <line x1="4.9" y1="4.9" x2="7" y2="7"/>
+                        <line x1="17" y1="17" x2="19.1" y2="19.1"/>
+                        <line x1="4.9" y1="19.1" x2="7" y2="17"/>
+                        <line x1="17" y1="7" x2="19.1" y2="4.9"/>
+                    </g>
+                </svg>
+                <svg class="theme-button__moon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+                </svg>
+            </button>
+        </header>
+
+        <main>
+            <form id="searchForm" class="search">
+                <input id="cityInput" type="search" class="search__input"
+                    placeholder="Zadejte název města (např. Praha, Brno, Londýn)..."
+                    aria-label="Název města" autocomplete="off" required>
+                <button type="submit" class="search__button">Hledat</button>
+            </form>
+
+            <p id="errorText" class="error" hidden></p>
+
+            <section class="current-card">
+                <h1 id="cityName" class="current-card__location">-</h1>
+                <p id="cityCountry" class="current-card__country"></p>
+
+                <div class="current-card__main">
+                    <div id="currentIcon" class="current-card__icon"></div>
+                    <div>
+                        <div class="current-card__temp"><span id="currentTemp">--</span><span class="unit">°C</span></div>
+                        <div id="currentDesc" class="current-card__desc">-</div>
+                        <div id="currentFeels" class="current-card__feels"></div>
+                    </div>
+                </div>
+
+                <div class="current-card__grid">
+                    <div class="metric">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2C8 8 6 11 6 14a6 6 0 0 0 12 0c0-3-2-6-6-12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <div class="metric__label">Vlhkost</div>
+                            <div class="metric__value"><span id="humidity">--</span> %</div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 12h11a3 3 0 1 0-3-3M4 18h15a3 3 0 1 1-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <div>
+                            <div class="metric__label">Vítr</div>
+                            <div class="metric__value"><span id="wind">--</span> km/h</div>
+                            <div class="metric__sub" id="windDir">-</div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <div>
+                            <div class="metric__label">Tlak</div>
+                            <div class="metric__value"><span id="pressure">--</span> hPa</div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                            <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <line x1="12" y1="1" x2="12" y2="4"/>
+                                <line x1="12" y1="20" x2="12" y2="23"/>
+                                <line x1="1" y1="12" x2="4" y2="12"/>
+                                <line x1="20" y1="12" x2="23" y2="12"/>
+                            </g>
+                        </svg>
+                        <div>
+                            <div class="metric__label">UV index</div>
+                            <div class="metric__value" id="uv">--</div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <path d="M17 18a5 5 0 0 0-10 0"/>
+                                <line x1="12" y1="2" x2="12" y2="9"/>
+                                <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+                                <line x1="1" y1="18" x2="3" y2="18"/>
+                                <line x1="21" y1="18" x2="23" y2="18"/>
+                                <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+                            </g>
+                        </svg>
+                        <div>
+                            <div class="metric__label">Východ slunce</div>
+                            <div class="metric__value" id="sunrise">--</div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <path d="M17 18a5 5 0 0 0-10 0"/>
+                                <line x1="12" y1="9" x2="12" y2="2"/>
+                                <line x1="12" y1="6" x2="9" y2="3"/>
+                                <line x1="12" y1="6" x2="15" y2="3"/>
+                                <line x1="1" y1="18" x2="23" y2="18"/>
+                            </g>
+                        </svg>
+                        <div>
+                            <div class="metric__label">Západ slunce</div>
+                            <div class="metric__value" id="sunset">--</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card__header">
+                    <h2 class="card__title">Předpověď na 24 hodin</h2>
+                </div>
+                <ul id="hourlyList" class="hourly-list"></ul>
+            </section>
+
+            <section class="card">
+                <div class="card__header">
+                    <h2 class="card__title">Vývoj počasí na 48 hodin</h2>
+                    <div class="tabs">
+                        <button class="tab tab--active" data-chart="temperature">Teplota</button>
+                        <button class="tab" data-chart="precipitation">Srážky</button>
+                        <button class="tab" data-chart="wind">Vítr</button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card__header">
+                    <h2 class="card__title">Předpověď na 7 dní</h2>
+                </div>
+                <ul id="dailyList"></ul>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Zdroj meteorologických dat: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo.com</a> (licence CC BY 4.0)</p>
+            <p>Maturitní práce &copy; Robin Fojtík, EDUCHEM a.s. 2026</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
